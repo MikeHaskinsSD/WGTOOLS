@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worth Staying For</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a weekly time card. Summary strip on top, entry column left, analysis column right. */
+:root {
+  --paper: #f2f4f7;
+  --card: #ffffff;
+  --ink: #12202e;
+  --muted: #566879;
+  --line: #d5dce4;
+  --genius: #f2b705;
+  --genius-ink: #6b4d00;
+  --comp: #7d93a8;
+  --comp-ink: #3e5266;
+  --frus: #b23a56;
+  --frus-ink: #8e2640;
+  --focus: #1c5fd6;
+  --display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0e151c; --card: #16202a; --ink: #e9eef3; --muted: #93a3b3; --line: #2a3845;
+    --genius: #f5c22e; --genius-ink: #f5c22e; --comp: #6f8ca6; --comp-ink: #a9bdcf;
+    --frus: #e0647f; --frus-ink: #f08aa0; --focus: #7aa7ff;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0e151c; --card: #16202a; --ink: #e9eef3; --muted: #93a3b3; --line: #2a3845;
+  --genius: #f5c22e; --genius-ink: #f5c22e; --comp: #6f8ca6; --comp-ink: #a9bdcf;
+  --frus: #e0647f; --frus-ink: #f08aa0; --focus: #7aa7ff;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1120px; margin: 0 auto; padding: 32px 20px 56px; }
+
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
+h2 { font-size: 1.25rem; font-weight: 700; }
+p { margin: 0; }
+.tag { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.lede { max-width: 62ch; color: var(--muted); font-size: 1.05rem; margin-top: 14px; }
+
+header { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+header h1 em { font-style: normal; background: linear-gradient(transparent 62%, var(--genius) 62%, var(--genius) 92%, transparent 92%); }
+
+/* summary strip */
+.summary {
+  display: grid; grid-template-columns: minmax(230px, 300px) 1fr; gap: 28px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 24px;
+}
+.score-num { font-family: var(--mono); font-weight: 600; font-size: clamp(3.6rem, 9vw, 5.5rem); line-height: 1; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+.score-num small { font-size: 1.1rem; color: var(--muted); font-weight: 400; letter-spacing: 0; margin-left: 4px; }
+.verdict { font-family: var(--display); font-weight: 700; font-size: 1.35rem; margin-top: 8px; }
+.verdict-note { color: var(--muted); font-size: 0.92rem; margin-top: 4px; }
+
+.bands { position: relative; margin-top: 18px; }
+.band-track { display: flex; height: 10px; border-radius: 5px; overflow: hidden; gap: 2px; }
+.band-track span { display: block; height: 100%; }
+.b1 { width: 35%; background: var(--frus); opacity: 0.85; }
+.b2 { width: 20%; background: var(--comp); opacity: 0.85; }
+.b3 { width: 20%; background: var(--genius); opacity: 0.7; }
+.b4 { width: 25%; background: var(--genius); }
+.marker { position: absolute; top: -6px; width: 0; height: 0; transition: left 0.45s ease; }
+.marker::after { content: ""; position: absolute; left: -7px; top: 0; width: 14px; height: 22px; background: var(--ink); clip-path: polygon(50% 100%, 0 0, 100% 0); opacity: 0; }
+.marker i { position: absolute; left: -2px; top: -4px; width: 4px; height: 24px; background: var(--ink); border-radius: 2px; }
+.band-labels { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 0.68rem; color: var(--muted); margin-top: 6px; }
+
+.mix h2 { margin-bottom: 14px; }
+.stack { display: flex; height: 44px; border-radius: 8px; overflow: hidden; gap: 2px; background: var(--line); }
+.stack div { display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-weight: 600; font-size: 0.85rem; min-width: 0; overflow: hidden; transition: flex-basis 0.45s ease; }
+.stack .s-g { background: var(--genius); color: #2a1f00; }
+.stack .s-c { background: var(--comp); color: #0e151c; }
+.stack .s-f { background: var(--frus); color: #fff; }
+.legend { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
+.legend div { border-top: 3px solid var(--line); padding-top: 8px; }
+.legend .l-g { border-color: var(--genius); }
+.legend .l-c { border-color: var(--comp); }
+.legend .l-f { border-color: var(--frus); }
+.legend b { display: block; font-family: var(--display); font-size: 0.95rem; }
+.legend span { display: block; font-family: var(--mono); font-size: 0.82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.legend p { font-size: 0.82rem; color: var(--muted); margin-top: 2px; }
+
+/* main grid */
+.grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 24px; margin-top: 24px; align-items: start; }
+.col { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+.card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+.card .sub { color: var(--muted); font-size: 0.92rem; margin-bottom: 16px; }
+.example-flag { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); border: 1px dashed var(--line); border-radius: 999px; padding: 2px 10px; }
+
+/* profile */
+.prof { display: flex; flex-direction: column; }
+.prof-row { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); }
+.prof-row:first-child { border-top: 0; }
+.badge { width: 34px; height: 34px; border-radius: 8px; display: grid; place-items: center; font-family: var(--mono); font-weight: 600; background: var(--line); color: var(--ink); }
+.prof-row[data-role="g"] .badge { background: var(--genius); color: #2a1f00; }
+.prof-row[data-role="c"] .badge { background: var(--comp); color: #0e151c; }
+.prof-row[data-role="f"] .badge { background: var(--frus); color: #fff; }
+.prof-name { font-family: var(--display); font-weight: 700; }
+.prof-desc { color: var(--muted); font-size: 0.85rem; line-height: 1.35; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label { padding: 6px 10px; font-size: 0.8rem; cursor: pointer; border-left: 1px solid var(--line); color: var(--muted); user-select: none; }
+.seg label:first-of-type { border-left: 0; }
+.seg input:checked + label { color: #fff; font-weight: 600; }
+.seg input[value="g"]:checked + label { background: var(--genius-ink); }
+.seg input[value="c"]:checked + label { background: var(--comp-ink); }
+.seg input[value="f"]:checked + label { background: var(--frus-ink); }
+:root[data-theme="dark"] .seg input:checked + label { color: #0e151c; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .seg input:checked + label { color: #0e151c; } }
+.seg input:focus-visible + label { outline: 2px solid var(--focus); outline-offset: -2px; }
+.prof-count { margin-top: 12px; font-size: 0.85rem; font-family: var(--mono); color: var(--muted); }
+.prof-count.warn { color: var(--frus-ink); }
+
+/* ledger */
+.ledger-head, .row { display: grid; grid-template-columns: minmax(0, 1fr) 128px 66px 28px; gap: 6px; align-items: center; }
+.ledger-head { font-family: var(--mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding: 0 0 6px 10px; }
+.row { padding: 6px 0 6px 10px; border-left: 4px solid var(--line); margin-bottom: 6px; }
+.row[data-role="g"] { border-left-color: var(--genius); }
+.row[data-role="c"] { border-left-color: var(--comp); }
+.row[data-role="f"] { border-left-color: var(--frus); }
+input[type="text"], input[type="number"], select {
+  width: 100%; font: inherit; font-size: 0.92rem; color: var(--ink); background: var(--paper);
+  border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0;
+}
+input[type="number"] { font-family: var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+input:focus-visible, select:focus-visible, button:focus-visible, input[type="range"]:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.icon-btn { width: 32px; height: 32px; border: 1px solid transparent; background: transparent; color: var(--muted); border-radius: 8px; cursor: pointer; font-size: 1.2rem; line-height: 1; }
+.icon-btn:hover { background: var(--paper); color: var(--frus-ink); border-color: var(--line); }
+.ledger-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; gap: 12px; flex-wrap: wrap; }
+.btn { font: inherit; font-weight: 600; font-size: 0.9rem; padding: 9px 16px; border-radius: 8px; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); cursor: pointer; }
+.btn:hover { opacity: 0.88; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn.ghost:hover { border-color: var(--ink); opacity: 1; }
+.total { font-family: var(--mono); font-size: 0.9rem; color: var(--muted); }
+.total b { color: var(--ink); }
+
+/* where hours go */
+.bars { display: flex; flex-direction: column; gap: 10px; }
+.bar-row { display: grid; grid-template-columns: 96px 1fr 58px; gap: 10px; align-items: center; font-size: 0.88rem; }
+.bar-row .nm { font-family: var(--display); font-weight: 600; }
+.bar-bg { height: 18px; background: var(--paper); border-radius: 4px; overflow: hidden; border: 1px solid var(--line); }
+.bar-fill { height: 100%; width: 0; transition: width 0.45s ease; }
+.bar-row[data-role="g"] .bar-fill { background: var(--genius); }
+.bar-row[data-role="c"] .bar-fill { background: var(--comp); }
+.bar-row[data-role="f"] .bar-fill { background: var(--frus); }
+.bar-val { font-family: var(--mono); text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+
+/* what if */
+.shift-line { font-size: 1rem; }
+.shift-line b { font-family: var(--display); }
+input[type="range"] { width: 100%; margin: 14px 0 6px; accent-color: var(--genius-ink); }
+.shift-out { display: flex; align-items: center; gap: 14px; font-family: var(--mono); }
+.shift-out .arrow { color: var(--muted); }
+.shift-out .big { font-size: 2rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.shift-verdict { font-family: var(--display); font-weight: 700; margin-top: 6px; }
+.muted { color: var(--muted); }
+
+.prompts { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px; counter-reset: p; }
+.prompts li { counter-increment: p; display: grid; grid-template-columns: 28px 1fr; gap: 10px; }
+.prompts li::before { content: counter(p); font-family: var(--mono); font-weight: 600; width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; font-size: 0.8rem; }
+
+/* half-page report */
+.report { max-width: 820px; margin-top: 24px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 24px; }
+.rep-top { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-start; padding-bottom: 14px; border-bottom: 2px solid var(--ink); }
+.rep-top h2 { font-size: 1.6rem; margin-top: 4px; }
+.rep-meta { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; min-width: 190px; }
+.rep-meta input { text-align: right; padding: 5px 8px; }
+.rep-body { display: grid; grid-template-columns: minmax(210px, 270px) 1fr; gap: 28px; padding: 18px 0; }
+.report .score-num { font-size: clamp(3.4rem, 8vw, 4.6rem); }
+.rep-split h3 { font-size: 1rem; margin-bottom: 10px; }
+.rep-split .stack { height: 34px; }
+.rep-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.85rem; }
+.rep-table th, .rep-table td { text-align: left; padding: 7px 8px 7px 0; border-top: 1px solid var(--line); vertical-align: top; }
+.rep-table th { font-family: var(--display); font-weight: 700; white-space: nowrap; }
+.rep-table td.n { font-family: var(--mono); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; padding-right: 0; padding-left: 8px; }
+.rep-table .dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
+.rep-table .dg { background: var(--genius); } .rep-table .dc { background: var(--comp); } .rep-table .df { background: var(--frus); }
+.rep-table td.t { color: var(--muted); }
+.rep-read { border-top: 1px solid var(--line); padding-top: 14px; font-size: 0.95rem; max-width: 80ch; }
+.rep-actions { margin-top: 14px; display: flex; align-items: center; gap: 12px; }
+@media (max-width: 700px) { .rep-body { grid-template-columns: 1fr; gap: 20px; } .rep-meta { align-items: flex-start; } .rep-meta input { text-align: left; } }
+@media print {
+  :root { --paper: #fff; --card: #fff; --ink: #12202e; --muted: #566879; --line: #d5dce4; --genius: #f2b705; --comp: #7d93a8; --frus: #b23a56; }
+  body { background: #fff; }
+  .wrap > header, .summary, .grid, footer, .no-print { display: none !important; }
+  .report { border: 0; max-width: none; padding: 0; margin: 0; }
+  .rep-meta input { border: 0; background: transparent; padding: 0; }
+}
+
+footer { margin-top: 28px; color: var(--muted); font-size: 0.82rem; max-width: 80ch; }
+footer a { color: var(--ink); }
+
+@media (max-width: 880px) {
+  .summary { grid-template-columns: 1fr; gap: 22px; }
+  .grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .wrap { padding: 20px 16px 40px; }
+  .summary, .card { padding: 18px; }
+  .ledger-head { display: none; }
+  .row { grid-template-columns: minmax(0, 1fr) 90px 32px; }
+  .row .task { grid-column: 1 / -1; }
+  .prof-row { grid-template-columns: 34px 1fr; }
+  .prof-row .seg { grid-column: 1 / -1; justify-self: start; }
+  .bar-row { grid-template-columns: 84px 1fr 52px; }
+  .legend { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="tag">Working Genius &middot; weekly ledger</span>
+    <h1>Worth <em>staying</em> for.</h1>
+    <p class="lede">People stay where their work gives them energy. Enter your six Working Genius results, then list the week you actually work. The ledger shows how many hours run on your genius, how many you can do but don't love, and how many drain you.</p>
+  </header>
+
+  <section class="summary" aria-live="polite" aria-label="Your week at a glance">
+    <div>
+      <span class="tag">Stay score</span>
+      <div class="score-num"><span id="score">--</span><small>/100</small></div>
+      <div class="verdict" id="verdict">&nbsp;</div>
+      <p class="verdict-note" id="verdictNote">&nbsp;</p>
+      <div class="bands" aria-hidden="true">
+        <div class="band-track"><span class="b1"></span><span class="b2"></span><span class="b3"></span><span class="b4"></span></div>
+        <div class="marker" id="marker"><i></i></div>
+        <div class="band-labels"><span>0</span><span>35</span><span>55</span><span>75</span><span>100</span></div>
+      </div>
+    </div>
+    <div class="mix">
+      <h2>How the week splits</h2>
+      <div class="stack" id="stack" role="img" aria-label="Share of hours by genius, competency and frustration"></div>
+      <div class="legend">
+        <div class="l-g"><b>Genius</b><span id="lg">--</span><p>Work that gives energy.</p></div>
+        <div class="l-c"><b>Competency</b><span id="lc">--</span><p>Work you can do, neither gain nor drain.</p></div>
+        <div class="l-f"><b>Frustration</b><span id="lf">--</span><p>Work that drains you, even when you are good at it.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid">
+    <div class="col">
+      <section class="card" aria-labelledby="h-prof">
+        <div class="card-head"><h2 id="h-prof">1. Your six results</h2><span class="example-flag" id="exFlag">example profile, replace with yours</span></div>
+        <p class="sub">Mark each type as a genius, a competency or a frustration. A Working Genius profile has two of each.</p>
+        <div class="prof" id="prof"></div>
+        <p class="prof-count" id="profCount"></p>
+      </section>
+
+      <section class="card" aria-labelledby="h-led">
+        <div class="card-head"><h2 id="h-led">2. Your week</h2></div>
+        <p class="sub">List recurring tasks with the hours they take in a typical week. Pick the type of effort each one mostly asks for.</p>
+        <div class="ledger-head"><span>Task</span><span>Type of effort</span><span style="text-align:right">Hrs/wk</span><span></span></div>
+        <div id="rows"></div>
+        <div class="ledger-foot">
+          <button class="btn ghost" id="addRow" type="button">Add a task</button>
+          <span class="total">Total <b id="total">0</b> hrs/wk</span>
+        </div>
+      </section>
+    </div>
+
+    <div class="col">
+      <section class="card" aria-labelledby="h-bars">
+        <h2 id="h-bars">Where the hours go</h2>
+        <p class="sub">Hours by type of effort, colored by how each type works for you.</p>
+        <div class="bars" id="bars"></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-shift">
+        <h2 id="h-shift">What if you moved some hours?</h2>
+        <div id="shiftBody"></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-talk">
+        <h2 id="h-talk">Take these to your next one-on-one</h2>
+        <p class="sub">Questions that turn the numbers into a conversation with a manager, a coach or yourself.</p>
+        <ol class="prompts" id="prompts"></ol>
+      </section>
+    </div>
+  </div>
+
+  <section class="report" id="report" aria-labelledby="h-rep">
+    <div class="rep-top">
+      <div>
+        <span class="tag">Worth Staying For &middot; weekly ledger report</span>
+        <h2 id="h-rep">My week, in half a page</h2>
+      </div>
+      <div class="rep-meta">
+        <label for="rWho" class="tag">Prepared for</label>
+        <input type="text" id="rWho" placeholder="Name or role">
+        <span class="tag" id="rDate"></span>
+      </div>
+    </div>
+    <div class="rep-body">
+      <div class="rep-score">
+        <span class="tag">Stay score</span>
+        <div class="score-num"><span id="rScore">--</span><small>/100</small></div>
+        <div class="verdict" id="rVerdict">&nbsp;</div>
+        <div class="bands" aria-hidden="true">
+          <div class="band-track"><span class="b1"></span><span class="b2"></span><span class="b3"></span><span class="b4"></span></div>
+          <div class="marker" id="rMarker"><i></i></div>
+          <div class="band-labels"><span>0</span><span>35</span><span>55</span><span>75</span><span>100</span></div>
+        </div>
+      </div>
+      <div class="rep-split">
+        <h3>How the week splits</h3>
+        <div class="stack" id="rStack" role="img" aria-label="Share of hours by genius, competency and frustration"></div>
+        <table class="rep-table" id="rTable"></table>
+      </div>
+    </div>
+    <p class="rep-read" id="rRead"></p>
+    <div class="rep-actions no-print">
+      <button class="btn" id="copyBtn" type="button">Copy report as text</button>
+      <span class="muted" id="copyMsg" style="font-size:0.85rem"></span>
+    </div>
+  </section>
+
+  <footer>
+    <p>Built on the Six Types of Working Genius by Patrick Lencioni. This is an independent planning aid, not the official assessment; take that at <a href="https://www.workinggenius.com" rel="noopener">workinggenius.com</a>. The stay score is a rule of thumb that rewards hours in genius, gives partial credit to competencies and subtracts hours in frustrations. Use it to start a conversation, not to judge a person or a job.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var TYPES = [
+    { k: 'W', name: 'Wonder', desc: 'Sensing that something could be better and asking what if.' },
+    { k: 'I', name: 'Invention', desc: 'Coming up with original ideas and solutions.' },
+    { k: 'D', name: 'Discernment', desc: 'Sizing up ideas and sensing which ones will work.' },
+    { k: 'G', name: 'Galvanizing', desc: 'Rallying people to get something started.' },
+    { k: 'E', name: 'Enablement', desc: 'Showing up with help when someone needs it.' },
+    { k: 'T', name: 'Tenacity', desc: 'Driving work across the finish line.' }
+  ];
+  var ROLE = { g: 'Genius', c: 'Competency', f: 'Frustration' };
+  var KEY = 'worth-staying-for-v1';
+
+  var EXAMPLE = {
+    profile: { W: 'g', I: 'c', D: 'c', G: 'f', E: 'g', T: 'f' },
+    rows: [
+      { name: 'Exploring ideas for new offerings', type: 'W', hours: 3 },
+      { name: 'Designing a workshop from scratch', type: 'I', hours: 4 },
+      { name: 'Reviewing proposals and choosing what to pursue', type: 'D', hours: 3 },
+      { name: 'Cold outreach and kickoff meetings', type: 'G', hours: 4 },
+      { name: 'Helping a colleague who is stuck', type: 'E', hours: 5 },
+      { name: 'Chasing deliverables to done', type: 'T', hours: 8 },
+      { name: 'Status reports and paperwork', type: 'T', hours: 5 }
+    ],
+    shift: 6
+  };
+
+  var state = clone(EXAMPLE);
+  var isExample = true;
+  try {
+    var saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (saved && saved.profile && Array.isArray(saved.rows)) { state = saved; isExample = !!saved.isExample; }
+  } catch (e) {}
+
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function save() { try { state.isExample = isExample; localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function typeName(k) { return TYPES.filter(function (t) { return t.k === k; })[0].name; }
+
+  /* ---- pure scoring ---- */
+  function scoreFor(g, c, f) {
+    var t = g + c + f;
+    if (t <= 0) return null;
+    var raw = g / t + 0.4 * (c / t) - 0.8 * (f / t);
+    return Math.round(((raw + 0.8) / 1.8) * 100);
+  }
+  function verdictFor(s) {
+    if (s < 35) return { t: 'Likely to leave', n: 'Most of this week drains you. Something has to change soon.' };
+    if (s < 55) return { t: 'Staying for the paycheck', n: 'You can do the job, but not much of it gives energy back.' };
+    if (s < 75) return { t: 'Staying by choice', n: 'Enough of the week runs on your genius to make staying worth it.' };
+    return { t: 'Hard to leave', n: 'Your genius carries the week. Protect these hours.' };
+  }
+  function compute(shift) {
+    var hrs = {}, g = 0, c = 0, f = 0;
+    TYPES.forEach(function (t) { hrs[t.k] = 0; });
+    state.rows.forEach(function (r) { hrs[r.type] += Number(r.hours) || 0; });
+    TYPES.forEach(function (t) {
+      var role = state.profile[t.k];
+      if (role === 'g') g += hrs[t.k]; else if (role === 'f') f += hrs[t.k]; else c += hrs[t.k];
+    });
+    return { hrs: hrs, g: g, c: c, f: f, total: g + c + f };
+  }
+
+  /* ---- profile ---- */
+  function renderProfile() {
+    var html = '';
+    TYPES.forEach(function (t) {
+      var role = state.profile[t.k];
+      html += '<div class="prof-row" data-role="' + role + '" data-k="' + t.k + '">' +
+        '<div class="badge" aria-hidden="true">' + t.k + '</div>' +
+        '<div><div class="prof-name">' + t.name + '</div><div class="prof-desc">' + t.desc + '</div></div>' +
+        '<div class="seg" role="radiogroup" aria-label="' + t.name + '">';
+      ['g', 'c', 'f'].forEach(function (r) {
+        var id = 'role-' + t.k + '-' + r;
+        html += '<input type="radio" name="role-' + t.k + '" id="' + id + '" value="' + r + '"' + (role === r ? ' checked' : '') + '>' +
+          '<label for="' + id + '">' + ROLE[r] + '</label>';
+      });
+      html += '</div></div>';
+    });
+    $('prof').innerHTML = html;
+    $('prof').querySelectorAll('input[type=radio]').forEach(function (el) {
+      el.addEventListener('change', function () {
+        var k = el.name.slice(5);
+        state.profile[k] = el.value;
+        isExample = false;
+        $('prof').querySelector('[data-k="' + k + '"]').setAttribute('data-role', el.value);
+        refreshRows(); update(); save();
+      });
+    });
+  }
+  function profileCount() {
+    var n = { g: 0, c: 0, f: 0 };
+    TYPES.forEach(function (t) { n[state.profile[t.k]]++; });
+    var el = $('profCount');
+    el.textContent = n.g + ' genius · ' + n.c + ' competency · ' + n.f + ' frustration';
+    var ok = n.g === 2 && n.c === 2 && n.f === 2;
+    el.classList.toggle('warn', !ok);
+    if (!ok) el.textContent += ' (a profile has two of each)';
+  }
+
+  /* ---- ledger ---- */
+  function rowHtml(r, i) {
+    var opts = TYPES.map(function (t) { return '<option value="' + t.k + '"' + (t.k === r.type ? ' selected' : '') + '>' + t.name + '</option>'; }).join('');
+    return '<div class="row" data-i="' + i + '" data-role="' + state.profile[r.type] + '">' +
+      '<input class="task" type="text" id="task-' + i + '" aria-label="Task ' + (i + 1) + '" value="' + esc(r.name) + '" placeholder="What is the task?">' +
+      '<select id="type-' + i + '" aria-label="Type of effort for task ' + (i + 1) + '">' + opts + '</select>' +
+      '<input type="number" id="hrs-' + i + '" aria-label="Hours per week for task ' + (i + 1) + '" min="0" max="80" step="0.5" value="' + r.hours + '">' +
+      '<button class="icon-btn" type="button" id="del-' + i + '" aria-label="Remove task ' + (i + 1) + '">&times;</button>' +
+      '</div>';
+  }
+  function renderRows() {
+    $('rows').innerHTML = state.rows.map(rowHtml).join('');
+    state.rows.forEach(function (r, i) {
+      var row = $('rows').children[i];
+      row.querySelector('.task').addEventListener('input', function (e) { r.name = e.target.value; isExample = false; update(); save(); });
+      row.querySelector('select').addEventListener('change', function (e) {
+        r.type = e.target.value; isExample = false;
+        row.setAttribute('data-role', state.profile[r.type]); update(); save();
+      });
+      row.querySelector('input[type=number]').addEventListener('input', function (e) {
+        var v = parseFloat(e.target.value);
+        r.hours = isNaN(v) ? 0 : Math.max(0, Math.min(80, v)); isExample = false; update(); save();
+      });
+      row.querySelector('button').addEventListener('click', function () {
+        state.rows.splice(i, 1); isExample = false; renderRows(); update(); save();
+      });
+    });
+  }
+  function refreshRows() {
+    Array.prototype.forEach.call($('rows').children, function (row, i) {
+      row.setAttribute('data-role', state.profile[state.rows[i].type]);
+    });
+  }
+
+  /* ---- results ---- */
+  function pct(n, t) { return t > 0 ? Math.round((n / t) * 100) : 0; }
+  function fmt(n) { return (Math.round(n * 10) / 10).toString(); }
+
+  function update() {
+    var d = compute();
+    profileCount();
+    $('exFlag').style.display = isExample ? '' : 'none';
+    $('total').textContent = fmt(d.total);
+
+    var s = scoreFor(d.g, d.c, d.f);
+    if (s === null) {
+      $('score').textContent = '--'; $('verdict').textContent = 'Add some hours'; $('verdictNote').textContent = 'List a few tasks with hours to see your score.';
+      $('marker').style.left = '0%';
+    } else {
+      var v = verdictFor(s);
+      $('score').textContent = s; $('verdict').textContent = v.t; $('verdictNote').textContent = v.n;
+      $('marker').style.left = s + '%';
+    }
+
+    var parts = [['s-g', d.g], ['s-c', d.c], ['s-f', d.f]];
+    $('stack').innerHTML = parts.map(function (p) {
+      var w = d.total > 0 ? (p[1] / d.total) * 100 : 0;
+      return '<div class="' + p[0] + '" style="flex:' + (w || 0) + ' 1 0%">' + (w >= 9 ? Math.round(w) + '%' : '') + '</div>';
+    }).join('');
+    $('lg').textContent = fmt(d.g) + ' hrs · ' + pct(d.g, d.total) + '%';
+    $('lc').textContent = fmt(d.c) + ' hrs · ' + pct(d.c, d.total) + '%';
+    $('lf').textContent = fmt(d.f) + ' hrs · ' + pct(d.f, d.total) + '%';
+
+    var max = Math.max.apply(null, TYPES.map(function (t) { return d.hrs[t.k]; }).concat([1]));
+    $('bars').innerHTML = TYPES.map(function (t) {
+      var role = state.profile[t.k];
+      return '<div class="bar-row" data-role="' + role + '"><span class="nm">' + t.name + '</span>' +
+        '<div class="bar-bg"><div class="bar-fill" style="width:' + (d.hrs[t.k] / max) * 100 + '%"></div></div>' +
+        '<span class="bar-val">' + fmt(d.hrs[t.k]) + ' h</span></div>';
+    }).join('');
+
+    renderShift(d, s);
+    renderPrompts(s, d);
+    renderReport(d, s);
+  }
+
+  function roleBreakdown(d, r) {
+    return TYPES.filter(function (t) { return state.profile[t.k] === r && d.hrs[t.k] > 0; })
+      .map(function (t) { return t.name + ' ' + fmt(d.hrs[t.k]) + ' h'; }).join(', ') || 'None';
+  }
+  function topType(d, r) {
+    var best = null;
+    TYPES.forEach(function (t) { if (state.profile[t.k] === r && d.hrs[t.k] > 0 && (!best || d.hrs[t.k] > d.hrs[best.k])) best = t; });
+    return best;
+  }
+  function readingText(d, s) {
+    if (s === null) return 'Add tasks and hours to see the report.';
+    var up = topType(d, 'g'), down = topType(d, 'f');
+    var txt = verdictFor(s).n;
+    if (up) txt += ' Most energizing: ' + up.name + ' (' + fmt(d.hrs[up.k]) + ' hrs a week).';
+    if (down) txt += ' Most draining: ' + down.name + ' (' + fmt(d.hrs[down.k]) + ' hrs a week).';
+    return txt;
+  }
+  function renderReport(d, s) {
+    $('rDate').textContent = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+    if (document.activeElement !== $('rWho')) $('rWho').value = state.who || '';
+    if (s === null) {
+      $('rScore').textContent = '--'; $('rVerdict').textContent = 'Add some hours'; $('rMarker').style.left = '0%';
+    } else {
+      $('rScore').textContent = s; $('rVerdict').textContent = verdictFor(s).t; $('rMarker').style.left = s + '%';
+    }
+    var rows = [['g', 'dg', 's-g', d.g], ['c', 'dc', 's-c', d.c], ['f', 'df', 's-f', d.f]];
+    $('rStack').innerHTML = rows.map(function (r) {
+      var w = d.total > 0 ? (r[3] / d.total) * 100 : 0;
+      return '<div class="' + r[2] + '" style="flex:' + w + ' 1 0%">' + (w >= 9 ? Math.round(w) + '%' : '') + '</div>';
+    }).join('');
+    $('rTable').innerHTML = rows.map(function (r) {
+      return '<tr><th><span class="dot ' + r[1] + '"></span>' + ROLE[r[0]] + '</th><td class="t">' + esc(roleBreakdown(d, r[0])) + '</td>' +
+        '<td class="n">' + fmt(r[3]) + ' h &middot; ' + pct(r[3], d.total) + '%</td></tr>';
+    }).join('');
+    $('rRead').textContent = readingText(d, s);
+  }
+
+  function renderShift(d, s) {
+    var body = $('shiftBody');
+    var from = null, to = null;
+    TYPES.forEach(function (t) {
+      var role = state.profile[t.k];
+      if (role === 'f' && d.hrs[t.k] > 0 && (!from || d.hrs[t.k] > d.hrs[from.k])) from = t;
+    });
+    TYPES.forEach(function (t) {
+      if (state.profile[t.k] === 'g' && (!to || d.hrs[t.k] < d.hrs[to.k])) to = t;
+    });
+    if (!from || !to || s === null) {
+      body.innerHTML = '<p class="muted">' + (s === null ? 'Add some hours first.' :
+        (!from ? 'No hours sit in a frustration type right now. Keep it that way.' : 'Mark at least one type as a genius to see what moving hours would do.')) + '</p>';
+      return;
+    }
+    var maxShift = Math.floor(d.hrs[from.k] * 2) / 2;
+    var shift = Math.min(Math.max(0, Number(state.shift) || 0), maxShift);
+    var s2 = scoreFor(d.g + shift, d.c, d.f - shift);
+    var v2 = verdictFor(s2);
+    body.innerHTML =
+      '<p class="shift-line">Hand off, share or drop <b id="shiftN">' + fmt(shift) + ' hours</b> of <b>' + from.name + '</b> work each week, and spend them on <b>' + to.name + '</b>, your least-used genius.</p>' +
+      '<input type="range" id="shift" min="0" max="' + maxShift + '" step="0.5" value="' + shift + '" aria-label="Hours per week to move">' +
+      '<div class="shift-out"><span class="big">' + s + '</span><span class="arrow">&rarr;</span><span class="big" id="s2">' + s2 + '</span></div>' +
+      '<p class="shift-verdict" id="v2">' + v2.t + '</p>';
+    $('shift').addEventListener('input', function (e) {
+      state.shift = parseFloat(e.target.value); save();
+      var sh = state.shift, n = scoreFor(d.g + sh, d.c, d.f - sh);
+      $('shiftN').textContent = fmt(sh) + ' hours'; $('s2').textContent = n; $('v2').textContent = verdictFor(n).t;
+    });
+  }
+
+  function renderPrompts(s, d) {
+    var list = [
+      'Which of my genius hours would I protect first if the week got crowded?',
+      'Which frustration task could be shared, automated or handed to someone whose genius it is?',
+      'If this week were every week for the next year, would I want to be here?'
+    ];
+    if (s !== null && s < 55) list[2] = 'What is the one change that would make next month feel noticeably better?';
+    $('prompts').innerHTML = list.map(function (p) { return '<li><span>' + p + '</span></li>'; }).join('');
+  }
+
+  function summaryText() {
+    var d = compute(), s = scoreFor(d.g, d.c, d.f);
+    var lines = ['WORTH STAYING FOR: WEEKLY LEDGER REPORT'];
+    if (state.who) lines.push('Prepared for: ' + state.who);
+    lines.push($('rDate').textContent, '');
+    if (s === null) { lines.push('No hours entered yet.'); return lines.join('\n'); }
+    lines.push('STAY SCORE: ' + s + '/100 (' + verdictFor(s).t + ')', '', 'HOW THE WEEK SPLITS');
+    [['g', d.g], ['c', d.c], ['f', d.f]].forEach(function (r) {
+      lines.push(ROLE[r[0]] + ': ' + fmt(r[1]) + ' hrs (' + pct(r[1], d.total) + '%) - ' + roleBreakdown(d, r[0]));
+    });
+    lines.push('', readingText(d, s));
+    return lines.join('\n');
+  }
+
+  $('addRow').addEventListener('click', function () {
+    state.rows.push({ name: '', type: 'W', hours: 1 }); isExample = false;
+    renderRows(); update(); save();
+    var last = $('rows').lastElementChild; if (last) last.querySelector('.task').focus();
+  });
+  $('copyBtn').addEventListener('click', function () {
+    var txt = summaryText();
+    var done = function (m) { $('copyMsg').textContent = m; setTimeout(function () { $('copyMsg').textContent = ''; }, 2500); };
+    try {
+      navigator.clipboard.writeText(txt).then(function () { done('Copied.'); }, function () { done('Copy was blocked. Select the numbers above instead.'); });
+    } catch (e) { done('Copy was blocked. Select the numbers above instead.'); }
+  });
+
+  $('rWho').addEventListener('input', function (e) { state.who = e.target.value; save(); });
+
+  renderProfile(); renderRows(); update();
+})();
+</script>
+</body>
+</html>
